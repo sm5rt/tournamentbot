@@ -301,7 +301,7 @@ async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 def main():
     # 🔑 ВСТАВЬ СВОЙ ТОКЕН ОТ @BotFather
-    TOKEN = "ВАШ_ТОКЕН_СЮДА"
+    TOKEN = "8452736961:AAEKav9Hm-xtmbnBC91jBy9M0Sua7eXWRt0"
 
     application = Application.builder().token(TOKEN).build()
 
@@ -332,4 +332,5 @@ def main():
     application.run_polling()
 
 if __name__ == "__main__":
+
     main()
