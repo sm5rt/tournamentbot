@@ -2,14 +2,14 @@ import json
 import os
 import random
 from datetime import datetime
-from typing import List, Dict, Optional
+from typing import List, Optional
 
 from telegram import (
     Update,
     InlineKeyboardButton,
-    InlineKeyboardMarkup,
-    ParseMode
+    InlineKeyboardMarkup
 )
+from telegram.constants import ParseMode
 from telegram.ext import (
     Application,
     CommandHandler,
@@ -133,7 +133,6 @@ async def collect_teams(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
         return COLLECTING_TEAMS
     else:
-        # Генерация первой стадии
         bracket = generate_bracket(context.user_data["teams"])
         context.user_data["bracket"] = [bracket]
         await show_bracket(update, context)
@@ -147,7 +146,6 @@ async def show_bracket(update: Update, context: ContextTypes.DEFAULT_TYPE, edit=
     if len(current_stage) == 1 and current_stage[0]["winner"]:
         winner_name = current_stage[0]["winner"]["name"]
         msg = f"🏆 **Победитель турнира '{context.user_data['tournament_name']}'**: {winner_name}!\n\n"
-        # Сохранение в историю
         history = load_history()
         tournament_id = str(int(datetime.now().timestamp()))
         history[tournament_id] = {
@@ -163,7 +161,6 @@ async def show_bracket(update: Update, context: ContextTypes.DEFAULT_TYPE, edit=
             await update.message.reply_text(msg, parse_mode=ParseMode.MARKDOWN)
         return
 
-    # Формирование сообщения со всеми стадиями
     full_msg = f"**Турнир: {context.user_data['tournament_name']}**\n\n"
     for i, stage in enumerate(stages):
         full_msg += f"**Стадия {i + 1}:**\n"
@@ -175,7 +172,6 @@ async def show_bracket(update: Update, context: ContextTypes.DEFAULT_TYPE, edit=
                 full_msg += f"{match['team1']['name']} — {team2_name}\n"
         full_msg += "\n"
 
-    # Кнопки для незавершённых матчей
     buttons = []
     for idx, match in enumerate(current_stage):
         if match["score1"] is None:
@@ -218,7 +214,6 @@ async def enter_result(update: Update, context: ContextTypes.DEFAULT_TYPE):
     match["score2"] = s2
     match["winner"] = match["team1"] if s1 > s2 else match["team2"]
 
-    # Проверка завершения стадии
     if all(m["score1"] is not None for m in current_stage):
         winners = [m["winner"] for m in current_stage if m["winner"]]
         if len(winners) > 1:
@@ -300,8 +295,9 @@ async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE):
 # ======================
 
 def main():
-    # 🔑 ВСТАВЬ СВОЙ ТОКЕН ОТ @BotFather
-    TOKEN = "8452736961:AAEKav9Hm-xtmbnBC91jBy9M0Sua7eXWRt0"
+    TOKEN = os.environ.get("BOT_TOKEN")
+    if not TOKEN:
+        raise ValueError("❌ Переменная окружения BOT_TOKEN не установлена!")
 
     application = Application.builder().token(TOKEN).build()
 
@@ -332,5 +328,4 @@ def main():
     application.run_polling()
 
 if __name__ == "__main__":
-
     main()
